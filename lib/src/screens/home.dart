@@ -10,6 +10,8 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> with TickerProviderStateMixin {
   Animation<double> catAnimation;
   AnimationController catController;
+  Animation<double> boxAnimation;
+  AnimationController boxController;
 
   @override
   void initState() {
@@ -24,13 +26,37 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
       parent: catController,
       curve: Curves.easeIn,
     ));
+
+    boxController = AnimationController(
+      duration: Duration(milliseconds: 250),
+      vsync: this,
+    );
+
+    boxAnimation = Tween(begin: pi * 0.60, end: pi * 0.65).animate(
+      CurvedAnimation(
+        parent: boxController,
+        curve: Curves.easeInOut,
+      ),
+    );
+    boxAnimation.addStatusListener(
+      (status) {
+        if (status == AnimationStatus.completed) {
+          boxController.reverse();
+        } else if (status == AnimationStatus.dismissed) {
+          boxController.forward();
+        }
+      },
+    );
+    boxController.forward();
   }
 
   onTap() {
     if (catController.isDismissed) {
       catController.forward();
+      boxController.stop();
     } else if (catController.isCompleted) {
       catController.reverse();
+      boxController.forward();
     }
   }
 
@@ -48,6 +74,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
               buildCatAnimation(),
               buildBox(),
               buildLeftFlap(),
+              buildRightFlap(),
             ],
           ),
         ),
@@ -80,13 +107,37 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
   }
 
   Widget buildLeftFlap() {
-    return Transform.rotate(
-      alignment: Alignment.topLeft,
-      angle: pi / 1.8,
-      child: Container(
-        height: 10.0,
-        width: 100.0,
-        color: Colors.brown,
+    return Positioned(
+      left: 7.0,
+      top: 4.0,
+      child: AnimatedBuilder(
+        animation: boxAnimation,
+        child: Container(height: 10.0, width: 100.0, color: Colors.brown),
+        builder: (ctx, child) {
+          return Transform.rotate(
+            alignment: Alignment.topLeft,
+            angle: boxAnimation.value,
+            child: child,
+          );
+        },
+      ),
+    );
+  }
+
+  Widget buildRightFlap() {
+    return Positioned(
+      right: 7.0,
+      top: 4.0,
+      child: AnimatedBuilder(
+        animation: boxAnimation,
+        child: Container(height: 10.0, width: 100.0, color: Colors.brown),
+        builder: (ctx, child) {
+          return Transform.rotate(
+            alignment: Alignment.topRight,
+            angle: -boxAnimation.value,
+            child: child,
+          );
+        },
       ),
     );
   }
