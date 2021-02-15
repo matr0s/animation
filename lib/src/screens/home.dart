@@ -1,27 +1,42 @@
-import 'package:animation/src/widgets/cat.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
 
+import '../widgets/cat.dart';
+
+// ************************************
+// * We are using a stateful widget because of state updates for some elements,
+// * but thos updates do not related to other screens.
+// * As a result, local state management is enough.
 class Home extends StatefulWidget {
   @override
   _HomeState createState() => _HomeState();
 }
 
 class _HomeState extends State<Home> with TickerProviderStateMixin {
+// ************************************
+// * Animation & Controllers declatation. We need two types of animated elements
+// * Cat + Flips.
+
+  // * Cat variables
   Animation<double> catAnimation;
   AnimationController catController;
+  // * Flip variables
   Animation<double> boxAnimation;
   AnimationController boxController;
 
   @override
   void initState() {
     super.initState();
+// ************************************
+// * We init our Animation and Controllers from the very beginning
 
+    // *  Controller ussualy responsable for current animation values and duration
     catController = AnimationController(
       duration: Duration(milliseconds: 200),
       vsync: this,
     );
-
+    // * We use Tween to define a range for animation values and animate it later
+    // * with a selected type of animation
     catAnimation = Tween(begin: -40.0, end: -83.0).animate(CurvedAnimation(
       parent: catController,
       curve: Curves.easeIn,
@@ -38,6 +53,8 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
         curve: Curves.easeInOut,
       ),
     );
+
+    //* Listener for the Box animation status. Depends on status we can have diff actions
     boxAnimation.addStatusListener(
       (status) {
         if (status == AnimationStatus.completed) {
@@ -47,9 +64,13 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
         }
       },
     );
+    // * Start Flip animation once the screen rendered
     boxController.forward();
   }
 
+// ************************************
+// * Method we are using for the GestureDetector action - onTap in our case
+// * This method runs the animation for Cat depends on our Tap action and animation status
   onTap() {
     if (catController.isDismissed) {
       catController.forward();
@@ -60,6 +81,8 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
     }
   }
 
+// ************************************
+// * MAIN METHOD
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -83,6 +106,8 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
     );
   }
 
+// ************************************
+// * Vertical animation for Cat() using builder
   Widget buildCatAnimation() {
     return AnimatedBuilder(
       animation: catAnimation,
@@ -94,10 +119,12 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
           left: 0.0,
         );
       },
+      // Cat() created separately. Safe recourses
       child: Cat(),
     );
   }
 
+  // * Box body on teh screen
   Widget buildBox() {
     return Container(
       height: 200.0,
